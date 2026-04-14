@@ -177,7 +177,7 @@ def build_shocks(brent, vix, gpr):
     df["ODS"] = df["d_ln_brent"].values - X @ coef
 
     assert abs(df["ORS"].corr(df["ODS"])) < 1e-6, "ORS and ODS not orthogonal"
-
+    
     for col in ["ORS", "ODS"]:
         df[col] = (df[col] - df[col].mean()) / df[col].std()
 
@@ -271,7 +271,7 @@ print(f"Total folds: {n_folds}")
 print(f"\n── Rolling CV with nested hyperparameter tuning ──")
 print(f"   Inner CV: {N_INNER_SPLITS}-fold TimeSeriesSplit within each training window")
 print(f"\n   {'Fold':>4}  {'Train':>22}  {'Test':>22}  "
-      f"{'N_tr':>6}  {'N_te':>6}  {'R²':>8}  {'RMSE':>8}  {'Best C':>7}")
+      f"{'N_tr':>6}  {'N_te':>6}  {'R²':>8}  {'RMSE':>8} {'MAE':>8} {'Best C':>7}")
 print("   " + "─"*85)
 
 fold_results = []
@@ -310,6 +310,7 @@ for fold, start in enumerate(fold_starts, start=1):
     y_pred = gs.best_estimator_.predict(X_te)
     r2     = r2_score(y_te, y_pred)
     rmse   = np.sqrt(mean_squared_error(y_te, y_pred))
+    mae    = mean_absolute_error(y_te, y_pred)
 
     d_tr_from = pd.Timestamp(dates[tr_idx[0]]).strftime("%Y-%m")
     d_tr_to   = pd.Timestamp(dates[tr_idx[-1]]).strftime("%Y-%m")
@@ -322,6 +323,7 @@ for fold, start in enumerate(fold_starts, start=1):
         "n_test":     len(te_idx),
         "r2_test":    r2,
         "rmse_test":  rmse,
+        "mae_test":   mae,
         "best_C":     gs.best_params_["C"],
         "best_eps":   gs.best_params_["epsilon"],
         "best_gamma": gs.best_params_["gamma"],
@@ -334,19 +336,22 @@ for fold, start in enumerate(fold_starts, start=1):
 
     print(f"   {fold:>4}  {d_tr_from}–{d_tr_to}  {d_te_from}–{d_te_to}  "
           f"{len(tr_idx):>6}  {len(te_idx):>6}  "
-          f"{r2:>+8.4f}  {rmse:>8.4f}   {gs.best_params_['C']:>7}")
+          f"{r2:>+8.4f}  {rmse:>8.4f}   {mae:>8.4f}   {gs.best_params_['C']:>7}")
 
 fold_df  = pd.DataFrame(fold_results)
 cv_r2    = fold_df["r2_test"].mean()
 cv_rmse  = fold_df["rmse_test"].mean()
+cv_mae   = fold_df["mae_test"].mean()
 oos_r2   = r2_score(all_oos_true, all_oos_pred)
 oos_rmse = np.sqrt(mean_squared_error(all_oos_true, all_oos_pred))
+oos_mae  = mean_absolute_error(all_oos_true, all_oos_pred)
 
 print(f"\n   Mean CV R²:         {cv_r2:+.4f}")
 print(f"   Mean CV RMSE:       {cv_rmse:.4f} log pts")
 print(f"   OOS R² (pooled):    {oos_r2:+.4f}")
-print(f"   OOS RMSE (pooled):  {oos_rmse:.4f} log pts  "
-      f"≈ {(np.exp(oos_rmse)-1)*100:.2f}% annual production")
+print(f"   OOS RMSE (pooled):  {oos_rmse:.4f} log pts")
+print(f"  OOS MAE (pooled):   {oos_mae:.4f} log pts")
+print(f"≈ {(np.exp(oos_rmse)-1)*100:.2f}% annual production")
 
 # ── 5. Final model on full data ───────────────────────────────────────────────
 
@@ -365,11 +370,14 @@ final_svr.fit(X_full, y)
 y_is_pred = final_svr.predict(X_full)
 is_r2   = r2_score(y, y_is_pred)
 is_rmse = np.sqrt(mean_squared_error(y, y_is_pred))
+is_mae  = mean_absolute_error(y, y_is_pred)
 
 print(f"   Hyperparameters: C={best_C}  ε={best_eps}  γ={best_gam}")
 print(f"   In-sample R²:    {is_r2:.4f}")
 print(f"   In-sample RMSE:  {is_rmse:.4f} log pts  "
       f"≈ {(np.exp(is_rmse)-1)*100:.2f}% annual production")
+print(f"   In-sample MAE:   {is_mae:.4f} log pts  "
+      f"≈ {(np.exp(is_mae)-1)*100:.2f}% annual production")
 
 # ── 6. Permutation feature importance (last fold OOS) ────────────────────────
 

@@ -1,9 +1,35 @@
-## Archived: 
-SVRDeviation: old Deviation file. It produced the right results, but I have since fine tuned it. this file is now only archived here. 
-SVRProduction: old Production file. It produced the right results, but I have since fine tuned it. this file is now only archived here. 
+#Data files needed: 
+1. COil_production_monthly.csv
+Crude Oil Production (OPEC)
+Source: 
 
-## Final: 
-SVRDeviation_tuned-2: Final SVR script, tuned, excl. Libya. Model 2. 
-Polynomial: Final baseline script (includes Libya). Model 4. 
-SVRDeviation2: Full SVR script, tuned, 12 countries. Model 1. 
-SVRProduction2.py: Full SVR production model, 12 countries. Model 3  
+2. DCOILBRENTEU.xlsx
+Crude Oil Value (EU)
+Source: 
+
+3. VIXCLS.xlsx
+VIX stock value
+Source: FRED
+
+4. GPR.xls
+Measure of geopolitical risk, normalised around 100
+Source: Caldara and Iocaviello 
+
+5. Oil_%_of_GDP.xls
+Percentage of GDP dependent on Oil
+Source: World Bank
+
+6. Institutional_Quality_Index.xlsx
+Source: World Bank
+   
+7. OPEC_Quotas.xlsx
+Source: OPEC 2024 bulletin
+
+#Codescripts
+#1. Polynomial.py
+Polynomial regression
+
+#2. SVR.py
+SVR with RBF Kernel
+
+#3. XGBoost.py

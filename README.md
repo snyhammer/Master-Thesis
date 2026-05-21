@@ -1,15 +1,15 @@
 #Data files needed: 
 1. COil_production_monthly.csv
 Crude Oil Production (OPEC)
-Source: 
+Source: U.S Energy Information Administration (EIA)
 
 2. DCOILBRENTEU.xlsx
 Crude Oil Value (EU)
-Source: 
+Source: Federal Reserve Economic Data (FRED)
 
 3. VIXCLS.xlsx
 VIX stock value
-Source: FRED
+Source: Federal Reserve Economic Data (FRED)
 
 4. GPR.xls
 Measure of geopolitical risk, normalised around 100
